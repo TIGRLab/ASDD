@@ -11,9 +11,9 @@
 6. The ASDD_GLM_sub_group.m script will generate a subject list.
 7. Use subj_loop.m to iterate over subjects and run the GLM. old_loop.m is the old way where you just loop over directories instead of generating a subject list.
 
-## Steps to PALM using run_PALM_simpleT.sh script                       
+## Steps to run PALM using run_PALM_simpleT.sh script                       
 
-1. export you HCP directory HCP_DATA=/scratch/mmanogaran/fmriprep/roi_ASDD_out/ciftify_ses/
+1. export your HCP directory HCP_DATA=/scratch/mmanogaran/fmriprep/roi_ASDD_out/ciftify_ses/
 
 2. Run a loop similar to this in terminal to convert you SPM outputs into dscalar to use in PALM:
 
@@ -41,12 +41,13 @@ for dir in /projects/ttan/ASSD/Data/testing/*; do k=${dir##*sub-}; echo ${k%%_*}
 module load matlab
 module load palm/alpha102
 module load connectome-workbench
-dir=/projects/ttan/ASSD/Data/PALM/ %%% dir is the path you store your PALM script %%%
 
-${dir}run_PALM_simpleT.sh  ${dir}ASD_above8_sublist.txt  ${dir}above8_filelistPPI.txt ${dir}PPI/Above8/DLPFC_right/2back
+dir=/projects/ttan/ASSD/Data/PALM/ # dir is the path you store your PALM script
+
+${dir}run_PALM_simpleT.sh ${dir}ASD_above8_sublist.txt ${dir}above8_filelistPPI.txt ${dir}PPI/Above8/DLPFC_right/2back
 ```
 
-## Steps to PALM using run_PALM_conmat.sh
+## Steps to run PALM using run_PALM_conmat.sh
 
 1. You have to generate an FSL style designmatrix.csv, using ones and zeros to indicate group membership. This should align with your group filelist and sublist.
 ```
