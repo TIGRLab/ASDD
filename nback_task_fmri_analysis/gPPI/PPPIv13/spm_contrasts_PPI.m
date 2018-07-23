@@ -1,4 +1,4 @@
-function SPM=spm_contrasts_PPI(SPM,Subject,SPMContrasts,Weighted,Method,GroupDir)
+function SPM=spm_contrasts_PPI(SPM,Subject,Contrasts,Weighted,Method,GroupDir)
 %Estimates PPI contrasts
 %   SPM is the SPM file for PPI or the SPM structure for PPI after
 %   estimation
@@ -11,7 +11,7 @@ function SPM=spm_contrasts_PPI(SPM,Subject,SPMContrasts,Weighted,Method,GroupDir
 %
 %
 % License:
-%   Copyright (c) 2011-16, Donald G. McLaren and Aaron Schultz
+%   Copyright (c) 2011, Donald G. McLaren and Aaron Schultz
 %   All rights reserved.
 %
 %    Redistribution, with or without modification, is permitted provided that the following conditions are met:
@@ -48,9 +48,7 @@ function SPM=spm_contrasts_PPI(SPM,Subject,SPMContrasts,Weighted,Method,GroupDir
 %   Updated the prefix portion to work with using multiple prefixes and
 %   prefix structures. This will now allow the user to specify individual
 %   runs.
-%
-%   7/7/2015:
-%   Removed move commands
+
 %% Program begins here
 %Check input arguments
 if ~isstruct(SPM)
@@ -61,111 +59,107 @@ if ~isstruct(SPM)
         return;
     end
 end
-
 cd(SPM.swd)
 if nargin==1
     error('Subject must be specified')
 end
-if nargin==2 || isempty(SPMContrasts)
+if nargin==2 || isempty(Contrasts)
     try
-        SPMContrasts=defContrasts(SPM,Weighted);
+        Contrasts=defContrasts(SPM,Weighted);
     catch
-        SPMContrasts=defContrasts(SPM,0);
+        Contrasts=defContrasts(SPM,0);
     end
 end
 if nargin<4
     Weighted=0;
 end
-if ~isempty(SPMContrasts) && iscellstr(SPMContrasts)
+if ~isempty(Contrasts) && iscellstr(Contrasts)
     try
-        SPMContrasts=defContrasts(SPM,Weighted,0,SPMContrasts);
+        Contrasts=defContrasts(SPM,Weighted,0,Contrasts);
     catch
-        SPMContrasts=defContrasts(SPM,0,0,SPMContrasts);
+        Contrasts=defContrasts(SPM,0,0,Contrasts);
     end
 end
-if ~isfield(SPMContrasts,'Weighted')
-    SPMContrasts(1).Weighted=Weighted;
+if ~isfield(Contrasts,'Weighted')
+    Contrasts(1).Weighted=Weighted;
 end
 
 %Configure Contrasts
-ind=zeros(length(SPMContrasts),1);
-display('Generate Contrast Vectors')
-for ii = 1:length(SPMContrasts)
-    if ~isfield(SPMContrasts(ii),'c') || isempty(SPMContrasts(ii).c)
-        if isempty(SPMContrasts(ii).Weighted)
-            SPMContrasts(ii).Weighted=Weighted;
+ind=zeros(length(Contrasts),1);
+for ii = 1:length(Contrasts)
+    if ~isfield(Contrasts(ii),'c') || isempty(Contrasts(ii).c)
+        if isempty(Contrasts(ii).Weighted)
+            Contrasts(ii).Weighted=Weighted;
         end
         if strcmpi(Method,'trad')
             try
-                SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,SPMContrasts(ii).Prefix)';
+                Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,Contrasts(ii).Prefix)';
             catch
-                SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted)';
+                Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted)';
             end
         else
-            if isfield(SPMContrasts(ii),'Prefix') && ~isempty(SPMContrasts(ii).Prefix) && isfield(SPMContrasts(ii),'Contrail') && ~isempty(SPMContrasts(ii).Contrail)
-                Prefix=checkprefix(SPMContrasts(ii).Prefix);
+            if isfield(Contrasts(ii),'Prefix') && ~isempty(Contrasts(ii).Prefix) && isfield(Contrasts(ii),'Contrail') && ~isempty(Contrasts(ii).Contrail)
+                Prefix=checkprefix(Contrasts(ii).Prefix);
                 try
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,Prefix,SPMContrasts(ii).Contrail,SPMContrasts(ii).MinEvents,SPMContrasts(ii).MinEventsPer)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,Prefix,Contrasts(ii).Contrail,Contrasts(ii).MinEvents,Contrasts(ii).MinEventsPer)';
                 catch
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,Prefix,SPMContrasts(ii).Contrail,SPMContrasts(ii).MinEvents)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,Prefix,Contrasts(ii).Contrail,Contrasts(ii).MinEvents)';
                 end
                   
-            elseif isfield(SPMContrasts(ii),'Prefix') && ~isempty(SPMContrasts(ii).Prefix)
-                Prefix=checkprefix(SPMContrasts(ii).Prefix);
+            elseif isfield(Contrasts(ii),'Prefix') && ~isempty(Contrasts(ii).Prefix)
+                Prefix=checkprefix(Contrasts(ii).Prefix);
                 try
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,Prefix,[],SPMContrasts(ii).MinEvents,SPMContrasts(ii).MinEventsPer)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,Prefix,[],Contrasts(ii).MinEvents,Contrasts(ii).MinEventsPer)';
                 catch
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,Prefix,[],SPMContrasts(ii).MinEvents)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,Prefix,[],Contrasts(ii).MinEvents)';
                 end
-            elseif isfield(SPMContrasts(ii),'Contrail') && ~isempty(SPMContrasts(ii).Contrail)
+            elseif isfield(Contrasts(ii),'Contrail') && ~isempty(Contrasts(ii).Contrail)
                 try
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,'PPI_',SPMContrasts(ii).Contrail,SPMContrasts(ii).MinEvents,SPMContrasts(ii).MinEventsPer)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,'PPI_',Contrasts(ii).Contrail,Contrasts(ii).MinEvents,Contrasts(ii).MinEventsPer)';
                 catch
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,'PPI_',SPMContrasts(ii).Contrail,SPMContrasts(ii).MinEvents)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,'PPI_',Contrasts(ii).Contrail,Contrasts(ii).MinEvents)';
                 end
             else
                 try
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,'PPI_',[],SPMContrasts(ii).MinEvents,SPMContrasts(ii).MinEventsPer)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,'PPI_',[],Contrasts(ii).MinEvents,Contrasts(ii).MinEventsPer)';
                 catch
-                    SPMContrasts(ii).c=createVec(SPMContrasts(ii).left,SPMContrasts(ii).right,SPM,SPMContrasts(ii).Weighted,'PPI_',[],SPMContrasts(ii).MinEvents)';
+                    Contrasts(ii).c=createVec(Contrasts(ii).left,Contrasts(ii).right,SPM,Contrasts(ii).Weighted,'PPI_',[],Contrasts(ii).MinEvents)';
                 end
             end
         end
-        
-        if mean(SPMContrasts(ii).c==0)~=1; ind(ii)=1; end
-        if isempty(SPMContrasts(ii).name)
-            if isfield(SPMContrasts(ii),'Prefix') && ~isempty(SPMContrasts(ii).Prefix) && isfield(SPMContrasts(ii),'Contrail') && ~isempty(SPMContrasts(ii).Contrail)
-                tmp=[SPMContrasts(ii).Prefix '_PPI_' SPMContrasts(ii).left 'minus' SPMContrasts(ii).right '_' SPMContrasts(ii).Contrail];
-            elseif isfield(SPMContrasts(ii),'Prefix') && ~isempty(SPMContrasts(ii).Prefix)
-                tmp=[SPMContrasts(ii).Prefix '_PPI_' SPMContrasts(ii).left 'minus' SPMContrasts(ii).right];
-            elseif isfield(SPMContrasts(ii),'Contrail') && ~isempty(SPMContrasts(ii).Contrail)
-                tmp=['PPI_' SPMContrasts(ii).left 'minus' SPMContrasts(ii).right '_' SPMContrasts(ii).Contrail];
+        mean(Contrasts(ii).c==0)~=1;
+        if mean(Contrasts(ii).c==0)~=1; ind(ii)=1; end
+        if isempty(Contrasts(ii).name)
+            if isfield(Contrasts(ii),'Prefix') && ~isempty(Contrasts(ii).Prefix) && isfield(Contrasts(ii),'Contrail') && ~isempty(Contrasts(ii).Contrail)
+                tmp=[Contrasts(ii).Prefix '_PPI_' Contrasts(ii).left 'minus' Contrasts(ii).right '_' Contrasts(ii).Contrail];
+            elseif isfield(Contrasts(ii),'Prefix') && ~isempty(Contrasts(ii).Prefix)
+                tmp=[Contrasts(ii).Prefix '_PPI_' Contrasts(ii).left 'minus' Contrasts(ii).right];
+            elseif isfield(Contrasts(ii),'Contrail') && ~isempty(Contrasts(ii).Contrail)
+                tmp=['PPI_' Contrasts(ii).left 'minus' Contrasts(ii).right '_' Contrasts(ii).Contrail];
             else
-                tmp=['PPI_' SPMContrasts(ii).left 'minus' SPMContrasts(ii).right];
+                tmp=['PPI_' Contrasts(ii).left 'minus' Contrasts(ii).right];
             end
             tmp=sprintf('%s_',tmp{:});
             tmp=tmp(1:end-1);
-            SPMContrasts(ii).name=tmp;
+            Contrasts(ii).name=tmp;
         else
-            if iscellstr(SPMContrasts(ii).name)
-                SPMContrasts(ii).name=['PPI_' cell2mat(SPMContrasts(ii).name)];
+            if iscellstr(Contrasts(ii).name)
+                Contrasts(ii).name=['PPI_' cell2mat(Contrasts(ii).name)];
             else
-                SPMContrasts(ii).name=['PPI_' SPMContrasts(ii).name];
+                Contrasts(ii).name=['PPI_' Contrasts(ii).name];
             end
         end
-        if isempty(SPMContrasts(ii).STAT)
-            SPMContrasts(ii).STAT='T';
+        if isempty(Contrasts(ii).STAT)
+            Contrasts(ii).STAT='T';
         end
     end
 end
-SPMContrasts=SPMContrasts(ind==1);
-for ii = 1:length(SPMContrasts)
-    disp('Generate xCon')
-    xCon(ii) = spm_FcUtil('Set',SPMContrasts(ii).name,SPMContrasts(ii).STAT,'c',SPMContrasts(ii).c,SPM.xX.xKXs);
+Contrasts=Contrasts(ind==1);
+for ii = 1:length(Contrasts)
+    xCon(ii) = spm_FcUtil('Set',Contrasts(ii).name,Contrasts(ii).STAT,'c',Contrasts(ii).c,SPM.xX.xKXs);
 end
 
 %Compute Contrasts
-disp('Generate Contrasts')
 try
     init=length(SPM.xCon);
 catch
@@ -177,108 +171,115 @@ else
     SPM.xCon = xCon;
 end
 SPM = spm_contrasts(SPM,init+1:length(SPM.xCon));
+
 % Move contrasts
 for ii=(1+init):numel(SPM.xCon)
     disp('Moving Contrast Images');
     DD=['_' date];
     f1 = SPM.xCon(ii).Vcon.fname;
-    if isempty(strfind(f1,'.nii'))
-        f2 = [SPM.xCon(ii).Vcon.fname(1:end-3) 'hdr'];
-        ext='.img';
-    else
-        ext='.nii';
-    end
+    f2 = [SPM.xCon(ii).Vcon.fname(1:end-3) 'hdr'];
     [junk fname]=fileparts(SPM.xCon(ii).Vcon.fname); fname=fname(6:end); clear junk
     if length(SPM.xCon(ii).name)==4 && strcmp(fname,SPM.xCon(ii).name);
         disp(['Contrast: ' SPM.xCon(ii).Vcon.fname ' was not moved.'])
         continue
     end
     err=0;
-    if ~exist([f1(1:4) SPM.xCon(ii).name '_' Subject ext],'file')
+    if ~exist([f1(1:4) SPM.xCon(ii).name '_' Subject '.img'],'file')
         try
-            disp('Time to Move')
-            disp(['Will move ' f1 ' to ' f1(1:4) SPM.xCon(ii).name '_' Subject ext])
-            disp('Now attempting move')
-            movefile(f1, [f1(1:4) SPM.xCon(ii).name '_' Subject ext],'f');
-            disp('Move successful.')
-            try movefile(f2, [f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],'f'); end
+            movefile(f1, [f1(1:4) SPM.xCon(ii).name '_' Subject '.img'],'f');
+            movefile(f2, [f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],'f');
         catch
             disp(['error moving contrast '  SPM.xCon(ii).name])
             err=1;
         end
         if exist('GroupDir','var') && exist(GroupDir,'dir')==7 && err==0
-            copyfile([f1(1:4) SPM.xCon(ii).name '_' Subject ext],GroupDir,'f');
-            try copyfile([f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f'); end
+        try
+            eval(['!ln -s "' pwd filesep f1(1:4) SPM.xCon(ii).name '_' Subject '.img" "' GroupDir filesep f1(1:4) SPM.xCon(ii).name '_' Subject '.img"'])
+            eval(['!ln -s "' pwd filesep f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr" "' GroupDir filesep f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr"'])
+        catch
+            copyfile([f1(1:4) SPM.xCon(ii).name '_' Subject '.img'],GroupDir,'f');
+            copyfile([f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f');
+        end
         end
     else
         try
-            movefile([f1(1:4) SPM.xCon(ii).name '_' Subject ext], [f1(1:4) SPM.xCon(ii).name DD '_' Subject  ext],'f');
-            try movefile([f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'], [f2(1:4) SPM.xCon(ii).name DD '_' Subject  '.hdr'],'f'); end
-            movefile(f1, [f1(1:4) SPM.xCon(ii).name '_' Subject ext],'f');
-            try movefile(f2, [f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],'f'); end
+            movefile([f1(1:4) SPM.xCon(ii).name '_' Subject '.img'], [f1(1:4) SPM.xCon(ii).name DD '_' Subject  '.img'],'f');
+            movefile([f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'], [f2(1:4) SPM.xCon(ii).name DD '_' Subject  '.hdr'],'f');
+            movefile(f1, [f1(1:4) SPM.xCon(ii).name '_' Subject '.img'],'f');
+            movefile(f2, [f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],'f');
             for kk = 1:numel(SPM.xCon)
-                if strcmp(SPM.xCon(kk).Vcon.fname,[f1(1:4) SPM.xCon(ii).name '_' Subject ext]) > 0
-                    SPM.xCon(kk).Vcon.fname=[f1(1:4) SPM.xCon(ii).name DD '_' Subject ext];
+                if strcmp(SPM.xCon(kk).Vcon.fname,[f1(1:4) SPM.xCon(ii).name '_' Subject '.img']) > 0
+                    SPM.xCon(kk).Vcon.fname=[f1(1:4) SPM.xCon(ii).name DD '_' Subject '.img'];
                     SPM.xCon(kk).name=[SPM.xCon(ii).name DD];
                     break
                 end
             end
            
         catch
-            disp(['error moving contrast when contrast already exists '  SPM.xCon(ii).name])
+            disp(['error moving contrast '  SPM.xCon(ii).name])
             err=1;
         end
         if exist('GroupDir','var') && exist(GroupDir,'dir')==7 && err==0
-            copyfile([f1(1:4) SPM.xCon(ii).name '_' Subject ext],GroupDir,'f');
-            try copyfile([f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f'); end
+            try
+                eval(['!ln -s "' pwd filesep f1(1:4) SPM.xCon(ii).name '_' Subject '.img" "' GroupDir filesep f1(1:4) SPM.xCon(ii).name '_' Subject '.img"'])
+            	eval(['!ln -s "' pwd filesep f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr" "' GroupDir filesep f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr"'])
+            catch
+                copyfile([f1(1:4) SPM.xCon(ii).name '_' Subject '.img'],GroupDir,'f');
+                copyfile([f2(1:4) SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f');
+            end
         end
     end
-    if ~strcmp(SPM.xCon(ii).Vcon.fname,[f1(1:4) SPM.xCon(ii).name '_' Subject ext])
-        SPM.xCon(ii).Vcon.fname=[f1(1:4) SPM.xCon(ii).name '_' Subject ext];
+    if ~strcmp(SPM.xCon(ii).Vcon.fname,[f1(1:4) SPM.xCon(ii).name '_' Subject '.img'])
+        SPM.xCon(ii).Vcon.fname=[f1(1:4) SPM.xCon(ii).name '_' Subject '.img'];
     end
     f1 = SPM.xCon(ii).Vspm.fname;
-    if isempty(strfind(f1,'.nii'))
-        f2 = [SPM.xCon(ii).Vspm.fname(1:end-3) 'hdr'];
-        ext='.img';
-    else
-        ext='.nii';
-    end
+    f2 = [SPM.xCon(ii).Vspm.fname(1:end-3) 'hdr'];
     err=0;
-    if ~exist([f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext],'file')
+    if ~exist([f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'],'file')
        try
-            movefile(f1, [f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext],'f');
-            try movefile(f2, [f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],'f'); end
+            movefile(f1, [f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'],'f');
+            movefile(f2, [f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],'f');
        catch
-           disp(['error moving spmT/F '  SPM.xCon(ii).name])
+           disp(['error moving contrast '  SPM.xCon(ii).name])
            err=1;
        end
        if exist('GroupDir','var') && exist(GroupDir,'dir')==7 && err==0
-            copyfile([f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext],GroupDir,'f');
-            try copyfile([f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f'); end %#ok<*TRYNC>
+            try
+                eval(['!ln -s "' pwd filesep f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img" "' GroupDir filesep f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img"'])
+                eval(['!ln -s "' pwd filesep f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr" "' GroupDir filesep f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr"'])
+            catch
+                copyfile([f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'],GroupDir,'f');
+                copyfile([f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f');
+            end
         end
     else
         try
-            movefile([f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext], [f1(1:4) '_' SPM.xCon(ii).name DD '_' Subject ext],'f');
-            try movefile([f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'], [f2(1:4) '_' SPM.xCon(ii).name DD '_' Subject '.hdr'],'f'); end
-            movefile(f1, [f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext],'f');
-            try movefile(f2, [f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],'f'); end
+            movefile([f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'], [f1(1:4) '_' SPM.xCon(ii).name DD '_' Subject '.img'],'f');
+            movefile([f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'], [f2(1:4) '_' SPM.xCon(ii).name DD '_' Subject '.hdr'],'f');
+            movefile(f1, [f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'],'f');
+            movefile(f2, [f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],'f');
             for kk = 1:numel(SPM.xCon)
-                if strcmp(SPM.xCon(kk).Vspm.fname,[f1(1:4) SPM.xCon(ii).name '_' Subject ext]) > 0
-                    SPM.xCon(kk).Vspm.fname=[f1(1:4) SPM.xCon(ii).name DD '_' Subject ext];
+                if strcmp(SPM.xCon(kk).Vspm.fname,[f1(1:4) SPM.xCon(ii).name '_' Subject '.img']) > 0
+                    SPM.xCon(kk).Vspm.fname=[f1(1:4) SPM.xCon(ii).name DD '_' Subject '.img'];
                     break
                 end
             end
        catch
-           disp(['error moving spmT/F when contrast already exists '  SPM.xCon(ii).name])
+           disp(['error moving contrast '  SPM.xCon(ii).name])
            err=1;
         end
         if exist('GroupDir','var') && exist(GroupDir,'dir')==7 && err==0
-                copyfile([f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext],GroupDir,'f');
-                try copyfile([f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f'); end
+            try
+                eval(['!ln -s "' pwd filesep f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img" "' GroupDir filesep f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img"'])
+                eval(['!ln -s "' pwd filesep f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr" "' GroupDir filesep f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr"'])
+            catch
+                copyfile([f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'],GroupDir,'f');
+                copyfile([f2(1:4) '_' SPM.xCon(ii).name '_' Subject '.hdr'],GroupDir,'f');
+            end
         end
     end 
-    if ~strcmp(SPM.xCon(ii).Vspm.fname,[f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext])
-        SPM.xCon(ii).Vspm.fname=[f1(1:4) '_' SPM.xCon(ii).name '_' Subject ext];
+    if ~strcmp(SPM.xCon(ii).Vspm.fname,[f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'])
+        SPM.xCon(ii).Vspm.fname=[f1(1:4) '_' SPM.xCon(ii).name '_' Subject '.img'];
     end 
 end
 save SPM.mat SPM
