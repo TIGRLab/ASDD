@@ -97,8 +97,8 @@ wb_command -cifti-convert -to-nifti DLPFC_right.dscalar.nii DLPFC_right.nii
 
 1. The main script is still HCP_gPPI.m
 2. Instead of a single ROI being used for everyone, each subject gets a unique ROI based on their activation.
-3. First run Search_Space.sh. The one in the repo will generate a huge ROI around the DLPFC vertex, but it is currently set to also be constrained to the fronto-parietal and salience networks from yeo atlas.
-4. Now run Task_Localizer.sh, which basically runs Find_Peak.sh for each subject. Find_Peak will find the maximum vertex of activation in the search space, and draw a 5mm ROI around that.
+3. Run Task_Localizer.sh with the loop. The one in the repo currently will generate a 25mm ROI around the DLPFC vertex. It can be modified to be lareger, and can also be constrained to the fronto-parietal and salience networks from yeo atlas.
+4. The task localizer basically will find the maximum vertex of activation in the search space, and draw a 5mm ROI around that.
 5. Change your HCP_gPPI.m script to point to the individualized ROIs.
 
 ## Other things to note:
